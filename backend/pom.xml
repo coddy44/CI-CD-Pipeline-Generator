@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Родительский POM Spring Boot: задаёт версии всех зависимостей и настройки плагинов -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>4.0.6</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.pipelinegen</groupId>
+    <artifactId>pipeline-generator</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>pipeline-generator</name>
+    <description>Генератор CI/CD-пайплайнов по ссылке на репозиторий</description>
+
+    <properties>
+        <java.version>21</java.version>
+        <springdoc.version>3.0.3</springdoc.version>
+    </properties>
+
+    <dependencies>
+        <!-- REST API (Spring MVC + встроенный Tomcat) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc</artifactId>
+        </dependency>
+
+        <!-- Валидация входных данных (@NotBlank, @Pattern и т.д.) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- /actuator/health — проверка, что сервис жив (пригодится при деплое) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- Шаблонизатор для генерации файлов пайплайнов (версию задаёт Spring Boot) -->
+        <dependency>
+            <groupId>org.freemarker</groupId>
+            <artifactId>freemarker</artifactId>
+        </dependency>
+
+        <!-- Swagger UI + OpenAPI-описание API: /swagger-ui.html -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc.version}</version>
+        </dependency>
+
+        <!-- Тесты: JUnit 5, AssertJ, Spring Test -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Собирает исполняемый jar: java -jar target/pipeline-generator-0.0.1-SNAPSHOT.jar -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>

@@ -1,0 +1,21 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: pipeline-generator
+
+# Откуда фронтенд может обращаться к API (порт dev-сервера фронта уточнить у frontend)
+app:
+  cors:
+    allowed-origins: http://localhost:3000,http://localhost:5173
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
