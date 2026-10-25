@@ -4,10 +4,7 @@ export function PipelineGraph({ pipeline }: { pipeline: Pipeline }) {
   if (!pipeline.structure) {
     return (
       <div className="flex h-64 items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 text-slate-500">
-        <p className="text-center max-w-sm">
-          Схема пайплайна появится здесь, как только бэкенд начнёт возвращать
-          поле <code>structure</code>.
-        </p>
+        <p className="text-center max-w-sm">Схема появится в будущем.</p>
       </div>
     );
   }
