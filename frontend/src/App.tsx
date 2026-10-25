@@ -1,7 +1,9 @@
+import { GeneratorPage } from "./pages/GeneratorPage";
+
 function App() {
   return (
-    <div className="p-8 text-2xl font-bold text-blue-600">
-      Приложение готово к работе!
+    <div className="min-h-screen bg-slate-50 py-10">
+      <GeneratorPage />
     </div>
   );
 }
