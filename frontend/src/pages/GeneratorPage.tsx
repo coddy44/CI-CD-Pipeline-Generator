@@ -2,6 +2,9 @@ import { useState } from "react";
 import { generatePipeline, BackendError } from "../api/client";
 import type { GenerateResponse } from "../api/types";
 import { RepoForm } from "../components/RepoForm";
+import { StackBadges } from "../components/StackBadges";
+import { WarningsList } from "../components/WarningsList";
+import { PipelineTabs } from "../components/PipelineTabs";
 
 export function GeneratorPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -56,13 +59,18 @@ export function GeneratorPage() {
       )}
 
       {result && (
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-slate-900 mb-4">
-            Результат
-          </h2>
-          <pre className="max-h-96 overflow-auto rounded-lg bg-slate-900 p-4 text-xs text-slate-100">
-            {JSON.stringify(result, null, 2)}
-          </pre>
+        <div className="flex flex-col gap-6">
+          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h2 className="mb-4 text-lg font-semibold text-slate-900">
+              Анализ репозитория
+            </h2>
+            <StackBadges stack={result.detectedStack} />
+            <div className="mt-4">
+              <WarningsList warnings={result.warnings} />
+            </div>
+          </div>
+
+          <PipelineTabs pipeline={result.pipeline} />
         </div>
       )}
     </div>
