@@ -7,6 +7,9 @@ spring:
 
 # Откуда фронтенд может обращаться к API (порт dev-сервера фронта уточнить у frontend)
 app:
+  repository:
+    temp-directory: ./target/repositories
+    timeout-seconds: 30
   cors:
     allowed-origins: http://localhost:3000,http://localhost:5173
 
