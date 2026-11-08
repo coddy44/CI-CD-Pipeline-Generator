@@ -1,3 +1,5 @@
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import type { Pipeline } from "../api/types";
 
 export function PipelineCode({ pipeline }: { pipeline: Pipeline }) {
@@ -14,6 +16,12 @@ export function PipelineCode({ pipeline }: { pipeline: Pipeline }) {
     a.download = pipeline.fileName;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const getLanguage = (fileName: string) => {
+    if (fileName.toLowerCase().includes("jenkins")) return "groovy";
+    if (fileName.endsWith(".yml") || fileName.endsWith(".yaml")) return "yaml";
+    return "text";
   };
 
   return (
@@ -33,9 +41,21 @@ export function PipelineCode({ pipeline }: { pipeline: Pipeline }) {
         </button>
       </div>
 
-      <pre className="max-h-[500px] overflow-auto rounded-lg bg-slate-900 p-4 text-sm text-slate-100">
-        <code>{pipeline.content}</code>
-      </pre>
+      <div className="max-h-[500px] overflow-auto rounded-lg text-sm">
+        <SyntaxHighlighter
+          language={getLanguage(pipeline.fileName)}
+          style={vscDarkPlus}
+          showLineNumbers={true}
+          wrapLines={true}
+          customStyle={{
+            margin: 0,
+            padding: "1.5rem",
+            borderRadius: "0.5rem",
+          }}
+        >
+          {pipeline.content}
+        </SyntaxHighlighter>
+      </div>
     </div>
   );
 }
