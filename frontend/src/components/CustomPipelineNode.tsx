@@ -1,3 +1,5 @@
+// frontend/src/components/CustomPipelineNode.tsx
+
 import { Handle, Position } from '@xyflow/react'
 import { MyCustomBuildIcon, MyCustomCheckoutIcon, MyCustomDeployIcon, MyCustomIcon, MyCustomTestIcon } from './Icons'
 
@@ -22,18 +24,18 @@ export function CustomPipelineNode({ data }: { data: { label: string } }) {
   const { color, Icon } = getStepAppearance(data.label)
 
   return (
-    <div className={`w-48 rounded-xl border-2 p-3 shadow-sm ${color} relative`}>
+    <div className={`w-48 rounded-xl border-2 p-3 shadow-sm ${color} relative bg-white`}>
       <Handle 
         type="target" 
-        position={Position.Top} 
-        className="!bg-slate-400 !w-3 !h-3" 
+        position={Position.Left} 
+        className="!bg-slate-400 !w-3 !h-3 !border-2 !border-white" 
       />
 
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/60 text-xl shadow-sm">
+        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/60 shadow-sm`}>
           <Icon className="h-5 w-5" />
         </div>
-        <div className="flex flex-col">
+        <div className="flex flex-col overflow-hidden">
           <span className="text-[10px] font-bold uppercase tracking-wider opacity-60">
             Step
           </span>
@@ -42,11 +44,10 @@ export function CustomPipelineNode({ data }: { data: { label: string } }) {
           </span>
         </div>
       </div>
-
       <Handle 
         type="source" 
-        position={Position.Bottom} 
-        className="!bg-slate-400 !w-3 !h-3" 
+        position={Position.Right} 
+        className="!bg-slate-400 !w-3 !h-3 !border-2 !border-white" 
       />
     </div>
   )
