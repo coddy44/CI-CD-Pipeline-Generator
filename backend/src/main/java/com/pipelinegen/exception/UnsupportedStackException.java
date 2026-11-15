@@ -1,6 +1,6 @@
 package com.pipelinegen.exception;
 
-/** Стек определён, но шаблона для него (или для выбранной CI-системы) пока нет. */
+/** Проект не подходит для анализа или для выбранной CI-системы нет шаблона. */
 public class UnsupportedStackException extends RuntimeException {
     public UnsupportedStackException(String message) {
         super(message);
