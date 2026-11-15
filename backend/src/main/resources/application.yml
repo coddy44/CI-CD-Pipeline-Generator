@@ -8,7 +8,7 @@ spring:
 # Откуда фронтенд может обращаться к API (порт dev-сервера фронта уточнить у frontend)
 app:
   repository:
-    temp-directory: ./target/repositories
+    temp-directory: ${java.io.tmpdir}/pipeline-generator
     timeout-seconds: 30
   cors:
     allowed-origins: http://localhost:3000,http://localhost:5173
