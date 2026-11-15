@@ -13,16 +13,16 @@ import java.nio.file.attribute.DosFileAttributeView;
 /** Временная рабочая копия. Закрытие удаляет её файлы, не переходя по символьным ссылкам. */
 public final class ClonedRepository implements AutoCloseable {
 
-    private final Path directory;
+    private final RepositoryWorkspace workspace;
     private final String branch;
 
-    ClonedRepository(Path directory, String branch) {
-        this.directory = directory;
+    ClonedRepository(RepositoryWorkspace workspace, String branch) {
+        this.workspace = workspace;
         this.branch = branch;
     }
 
     public Path directory() {
-        return directory;
+        return workspace.directory();
     }
 
     /** Фактически полученная ветка; не обязательно ветка репозитория по умолчанию. */
@@ -32,7 +32,7 @@ public final class ClonedRepository implements AutoCloseable {
 
     @Override
     public void close() throws IOException {
-        deleteDirectory(directory);
+        workspace.close();
     }
 
     static void deleteDirectory(Path directory) throws IOException {
