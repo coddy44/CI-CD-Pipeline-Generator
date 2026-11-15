@@ -1,2 +1,246 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
 @import "@xyflow/react/dist/style.css";
 @import "tailwindcss";
+
+@theme {
+  --color-void: #04060e;
+  --color-abyss: #070b1a;
+  --color-panel: #0a1024;
+  --color-raised: #0e1530;
+  --color-line: #1e2a55;
+  --color-star: #e8edff;
+  --color-dim: #93a0d8;
+  --color-faint: #5a6699;
+  --color-pulsar: #5b8cff;
+  --color-quasar: #a78bfa;
+  --color-comet: #22d3ee;
+  --color-nova: #f472b6;
+  --color-flare: #fbbf24;
+  --color-aurora: #34d399;
+  --color-redshift: #fb7185;
+
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-void);
+  color: var(--color-star);
+  font-family: var(--font-display);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: rgba(91, 140, 255, 0.35);
+  color: #ffffff;
+}
+
+:focus-visible {
+  outline: 2px solid rgba(91, 140, 255, 0.6);
+  outline-offset: 2px;
+}
+
+/* Скроллбары в цветах темы */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2c3d80 var(--color-abyss);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-abyss);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #3b4fd8, #7c3aed);
+  border-radius: 8px;
+  border: 2px solid var(--color-abyss);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-pulsar);
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--color-abyss);
+}
+
+select option {
+  background-color: var(--color-panel);
+  color: var(--color-star);
+}
+
+/* ReactFlow под тёмную тему */
+.react-flow__controls {
+  border: 1px solid #223061;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(2, 4, 12, 0.5);
+}
+
+.react-flow__controls-button {
+  width: 30px;
+  height: 30px;
+  background: #0c1229;
+  border-bottom: 1px solid #1a2450;
+  color: #9fb0e8;
+}
+
+.react-flow__controls-button:hover {
+  background: #16204a;
+  color: var(--color-star);
+}
+
+.react-flow__controls-button svg {
+  fill: currentColor;
+}
+
+.react-flow__edge-path {
+  stroke-linecap: round;
+}
+
+.react-flow__attribution {
+  background: rgba(7, 11, 26, 0.6);
+  color: var(--color-faint);
+}
+
+.react-flow__attribution a {
+  color: #7c8bd0;
+}
+
+/* Космический фон */
+.starfield {
+  background-image:
+    radial-gradient(
+      1px 1px at 25% 35%,
+      rgba(232, 237, 255, 0.9) 50%,
+      transparent 51%
+    ),
+    radial-gradient(
+      1px 1px at 75% 15%,
+      rgba(167, 139, 250, 0.8) 50%,
+      transparent 51%
+    ),
+    radial-gradient(
+      1.5px 1.5px at 50% 70%,
+      rgba(34, 211, 238, 0.7) 50%,
+      transparent 51%
+    ),
+    radial-gradient(
+      1px 1px at 10% 80%,
+      rgba(232, 237, 255, 0.6) 50%,
+      transparent 51%
+    ),
+    radial-gradient(
+      1px 1px at 90% 60%,
+      rgba(91, 140, 255, 0.8) 50%,
+      transparent 51%
+    ),
+    radial-gradient(
+      1.5px 1.5px at 40% 10%,
+      rgba(232, 237, 255, 0.5) 50%,
+      transparent 51%
+    );
+  background-size:
+    260px 260px,
+    340px 340px,
+    420px 420px,
+    300px 300px,
+    380px 380px,
+    460px 460px;
+  animation: twinkle 6s ease-in-out infinite alternate;
+}
+
+.grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+}
+
+.nebula-drift {
+  animation: drift 26s ease-in-out infinite alternate;
+}
+
+.nebula-drift-slow {
+  animation: drift 38s ease-in-out infinite alternate-reverse;
+}
+
+/* Анимации */
+.anim-fade-up {
+  animation: fade-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #0e1530 25%, #1a2450 50%, #0e1530 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+@keyframes twinkle {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(4%, 3%, 0) scale(1.08);
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes orbit-reverse {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: -200% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .starfield,
+  .nebula-drift,
+  .nebula-drift-slow,
+  .anim-fade-up,
+  .skeleton {
+    animation: none;
+  }
+}
