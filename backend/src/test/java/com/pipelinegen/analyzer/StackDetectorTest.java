@@ -56,11 +56,11 @@ class StackDetectorTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"yarn.lock", "pnpm-lock.yaml"})
-    void rejectsUnconfirmedNpm(String marker) throws IOException {
+    void rejectsOtherPackageManagers(String marker) throws IOException {
         write("package.json", "{}");
         write("index.js", "");
-        if (!marker.equals("missing-lock")) write(marker, "");
-        rejects(marker.equals("missing-lock") ? "npm не подтверждён" : marker);
+        write(marker, "");
+        rejects(marker);
     }
 
     @ParameterizedTest
@@ -100,10 +100,28 @@ class StackDetectorTest {
     }
 
     @Test
-    void rejectsTwoUsableProjects() throws IOException {
+    void detectsMavenWithAuxiliaryJavaScript() throws IOException {
         write("pom.xml", POM.formatted(""));
         write("src/main/java/App.java", "");
-        write("package.json", "{\"packageManager\":\"npm@10.0.0\"}");
+        write("package.json", "{\"scripts\":{\"docs\":\"node scripts/docs.js\"}}");
+        write("scripts/docs.js", "");
+
+        var stack = detector.detect(root);
+        assertThat(stack.language()).isEqualTo(Language.JAVA);
+        assertThat(stack.buildTool()).isEqualTo(BuildTool.MAVEN);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"packageManager", "package-lock.json", "npm-shrinkwrap.json"})
+    void rejectsTwoUsableProjects(String marker) throws IOException {
+        write("pom.xml", POM.formatted(""));
+        write("src/main/java/App.java", "");
+        if (marker.equals("packageManager")) {
+            write("package.json", "{\"packageManager\":\"npm@10.0.0\"}");
+        } else {
+            write("package.json", "{}");
+            write(marker, "{}");
+        }
         write("src/index.js", "");
         rejects("несколько");
     }
@@ -144,6 +162,17 @@ class StackDetectorTest {
         assertThat(detector.detect(root).languageVersion()).isEqualTo("3.13");
         write(".python-version", "3.12");
         rejects("requires-python");
+    }
+
+    @Test
+    void comparesExactPythonVersionsNumerically() throws IOException {
+        write("pyproject.toml", "[project]\nrequires-python = '==3.13'");
+        write("app.py", "");
+        write(".python-version", "3.13.0");
+        assertThat(detector.detect(root).languageVersion()).isEqualTo("3.13.0");
+
+        write(".python-version", "3.13.1");
+        rejects("==3.13");
     }
 
     @Test

@@ -19,7 +19,10 @@ final class PythonVersion {
         var range = RANGE.matcher(constraint);
         if (exact.matches()) {
             String required = exact.group(1);
-            if (pinned == null || pinned.equals(required)) return required;
+            if (pinned == null) return required;
+            if (pinned.matches(VERSION) && compare(pinned, required) == 0) {
+                return pinned.split("\\.").length == 3 ? pinned : required;
+            }
         } else if (range.matches()) {
             String lower = range.group(1);
             String upper = range.group(2);

@@ -64,11 +64,12 @@ public class StackDetector {
         if (files.contains("pom.xml")) {
             addCandidate(candidates, problems, () -> detectMaven(directory, files));
         }
-        if (files.contains("package.json")) {
-            addCandidate(candidates, problems, () -> detectNpm(directory, files));
-        }
         if (files.contains("requirements.txt") || files.contains("pyproject.toml") || files.contains("setup.py")) {
             addCandidate(candidates, problems, () -> detectPython(directory, files));
+        }
+        if (files.contains("package.json")) {
+            boolean requireNpmMarker = !candidates.isEmpty();
+            addCandidate(candidates, problems, () -> detectNpm(directory, files, requireNpmMarker));
         }
         if (candidates.size() > 1) {
             throw new UnsupportedStackException("В корне найдены несколько поддерживаемых проектов");
@@ -225,7 +226,7 @@ public class StackDetector {
         return version.matches("[1-9]\\d*(?:\\.\\d+){0,2}") ? version : null;
     }
 
-    private DetectedStack detectNpm(Path directory, Set<String> files) throws IOException {
+    private DetectedStack detectNpm(Path directory, Set<String> files, boolean requireNpmMarker) throws IOException {
         rejectFiles(files, "yarn.lock", "pnpm-lock.yaml", "bun.lock", "bun.lockb");
         try {
             var manifest = jsonMapper.readTree(readManifest(directory, "package.json"));
@@ -239,6 +240,9 @@ public class StackDetector {
                 throw new UnsupportedStackException("Поддерживается только packageManager npm с указанной версией");
             }
             boolean hasLockfile = files.contains("package-lock.json") || files.contains("npm-shrinkwrap.json");
+            if (requireNpmMarker && !hasLockfile && !npmDeclared) {
+                throw new UnsupportedStackException("Для отдельного npm-проекта нужен lock-файл или packageManager npm");
+            }
             boolean typescript = files.stream().filter(StackDetector::isApplicationSource)
                     .anyMatch(path -> path.matches(".*\\.(ts|tsx|mts|cts)$")
                     && !path.matches(".*\\.d\\.(ts|mts|cts)$"));
