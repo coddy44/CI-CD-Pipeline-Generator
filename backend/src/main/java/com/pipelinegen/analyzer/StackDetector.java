@@ -194,9 +194,8 @@ public class StackDetector {
             }
         }
         String version = readVersion(directory, files, ".python-version", "runtime.txt");
-        if (version == null && project != null && project.get("requires-python") instanceof String requirement
-                && requirement.startsWith("==")) {
-            version = runtimeVersion(requirement.substring(2));
+        if (project != null && project.get("requires-python") instanceof String requirement) {
+            version = PythonVersion.select(version, requirement);
         }
         return new DetectedStack(Language.PYTHON, BuildTool.PIP, version,
                 List.of("django", "flask", "fastapi").stream().filter(dependencies::contains).toList(),
@@ -239,9 +238,7 @@ public class StackDetector {
             if (manager != null && !npmDeclared) {
                 throw new UnsupportedStackException("Поддерживается только packageManager npm с указанной версией");
             }
-            if (!npmDeclared && !files.contains("package-lock.json") && !files.contains("npm-shrinkwrap.json")) {
-                throw new UnsupportedStackException("npm не подтверждён: нужен lock-файл npm или packageManager=npm@версия");
-            }
+            boolean hasLockfile = files.contains("package-lock.json") || files.contains("npm-shrinkwrap.json");
             boolean typescript = files.stream().filter(StackDetector::isApplicationSource)
                     .anyMatch(path -> path.matches(".*\\.(ts|tsx|mts|cts)$")
                     && !path.matches(".*\\.d\\.(ts|mts|cts)$"));
@@ -262,7 +259,7 @@ public class StackDetector {
             boolean hasTests = testScript
                     || files.stream().anyMatch(path -> path.matches(".*\\.(test|spec)\\.(?:[cm]?[jt]s|[jt]sx)$"));
             return new DetectedStack(typescript ? Language.TYPESCRIPT : Language.JAVASCRIPT, BuildTool.NPM,
-                    version, frameworks, hasTests, files.contains("Dockerfile"));
+                    version, frameworks, hasTests, files.contains("Dockerfile"), hasLockfile, testScript);
         } catch (JacksonException e) {
             throw new UnsupportedStackException("Некорректный package.json");
         }

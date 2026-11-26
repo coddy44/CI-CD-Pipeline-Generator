@@ -32,7 +32,8 @@ public class PipelineService {
             String version = TemplatePipelineGenerator.resolveLanguageVersion(stack);
             warnings.add("Версия среды не определена. Используется версия " + version);
             stack = new ProjectStack(stack.language(), version, stack.buildTool(), stack.frameworks(),
-                    stack.hasTests(), stack.hasDockerfile(), stack.defaultBranch());
+                    stack.hasTests(), stack.hasDockerfile(), stack.defaultBranch(),
+                    stack.hasNpmLockfile(), stack.hasNpmTestScript());
         }
         if (!stack.hasTests()) {
             warnings.add("Тесты не найдены — шаг запуска тестов не добавлен в пайплайн");

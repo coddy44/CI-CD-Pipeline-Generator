@@ -26,7 +26,7 @@ public class JGitRepositoryAnalyzer implements RepositoryAnalyzer {
             String defaultBranch = branch == null || branch.isBlank() ? clone.branch() : client.defaultBranch(repoUrl);
             requireSupportedBranch(defaultBranch);
             return new ProjectStack(stack.language(), stack.languageVersion(), stack.buildTool(), stack.frameworks(),
-                    stack.hasTests(), stack.hasDockerfile(), defaultBranch);
+                    stack.hasTests(), stack.hasDockerfile(), defaultBranch, stack.hasNpmLockfile(), stack.hasNpmTestScript());
         } catch (IOException e) {
             throw new IllegalStateException("Не удалось прочитать или удалить временную копию репозитория", e);
         }

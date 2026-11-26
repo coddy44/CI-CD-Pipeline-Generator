@@ -50,10 +50,12 @@ class StackDetectorTest {
         assertThat(stack.languageVersion()).isEqualTo("22");
         assertThat(stack.frameworks()).containsExactly("react");
         assertThat(stack.hasTests()).isTrue();
+        assertThat(stack.hasNpmTestScript()).isTrue();
+        assertThat(stack.hasNpmLockfile()).isTrue();
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"yarn.lock", "pnpm-lock.yaml", "missing-lock"})
+    @ValueSource(strings = {"yarn.lock", "pnpm-lock.yaml"})
     void rejectsUnconfirmedNpm(String marker) throws IOException {
         write("package.json", "{}");
         write("index.js", "");
@@ -133,6 +135,43 @@ class StackDetectorTest {
     void rejectsMalformedUtf8() throws IOException {
         Files.write(root.resolve("pom.xml"), new byte[]{(byte) 0xff});
         rejects("UTF-8");
+    }
+
+    @Test
+    void selectsPythonFromRange() throws IOException {
+        write("pyproject.toml", "[project]\nrequires-python = '>=3.13,<3.14'");
+        write("app.py", "");
+        assertThat(detector.detect(root).languageVersion()).isEqualTo("3.13");
+        write(".python-version", "3.12");
+        rejects("requires-python");
+    }
+
+    @Test
+    void rejectsUnsupportedPythonConstraint() throws IOException {
+        write("pyproject.toml", "[project]\nrequires-python = '~=3.13'");
+        write("app.py", "");
+        rejects("~=3.13");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"package-lock.json", "npm-shrinkwrap.json", "none"})
+    void distinguishesNpmTestFilesFromTestScript(String lockfile) throws IOException {
+        write("package.json", "{\"scripts\":{\"test:unit\":\"vitest\"}}");
+        write("index.test.ts", "");
+        if (!lockfile.equals("none")) write(lockfile, "{}");
+        var stack = detector.detect(root);
+        assertThat(stack.hasTests()).isTrue();
+        assertThat(stack.hasNpmTestScript()).isFalse();
+        assertThat(stack.hasNpmLockfile()).isEqualTo(!lockfile.equals("none"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", "   ", "echo \"Error: no test specified\" && exit 1"})
+    void ignoresEmptyAndPlaceholderNpmTestScript(String script) throws IOException {
+        write("package.json", tools.jackson.databind.json.JsonMapper.builder().build()
+                .writeValueAsString(java.util.Map.of("scripts", java.util.Map.of("test", script))));
+        write("index.js", "");
+        assertThat(detector.detect(root).hasNpmTestScript()).isFalse();
     }
 
     private void rejects(String message) {
