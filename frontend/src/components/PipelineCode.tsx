@@ -1,9 +1,42 @@
+import { useEffect, useRef, useState } from "react";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import type { Pipeline } from "../api/types";
 
+const buttonClassName =
+  "rounded-md border border-line bg-raised px-3 py-1.5 text-xs font-medium text-dim transition hover:border-pulsar/50 hover:text-star";
+
+function getLanguage(fileName: string) {
+  if (fileName.toLowerCase().includes("jenkins")) return "groovy";
+  if (fileName.endsWith(".yml") || fileName.endsWith(".yaml")) return "yaml";
+  return "text";
+}
+
 export function PipelineCode({ pipeline }: { pipeline: Pipeline }) {
-  const handleCopy = () => {
-    navigator.clipboard.writeText(pipeline.content);
-    alert("Код скопирован в буфер обмена!");
+  const [isCopied, setIsCopied] = useState(false);
+  const timerRef = useRef<number | null>(null);
+
+  useEffect(
+    () => () => {
+      if (timerRef.current) window.clearTimeout(timerRef.current);
+    },
+    [],
+  );
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(pipeline.content);
+    } catch {
+      const area = document.createElement("textarea");
+      area.value = pipeline.content;
+      document.body.appendChild(area);
+      area.select();
+      document.execCommand("copy");
+      area.remove();
+    }
+    setIsCopied(true);
+    if (timerRef.current) window.clearTimeout(timerRef.current);
+    timerRef.current = window.setTimeout(() => setIsCopied(false), 2000);
   };
 
   const handleDownload = () => {
@@ -17,25 +50,41 @@ export function PipelineCode({ pipeline }: { pipeline: Pipeline }) {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex gap-2">
-        <button
-          onClick={handleCopy}
-          className="rounded bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-200"
-        >
-          Скопировать
-        </button>
-        <button
-          onClick={handleDownload}
-          className="rounded bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-200"
-        >
-          Скачать {pipeline.fileName}
-        </button>
+    <div className="anim-fade-up flex flex-col gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className="rounded-md border border-line bg-abyss/80 px-2.5 py-1 font-mono text-xs text-comet">
+          {pipeline.fileName}
+        </span>
+        <div className="flex gap-2">
+          <button
+            onClick={handleCopy}
+            className={`${buttonClassName} ${isCopied ? "!border-aurora/50 !text-aurora" : ""}`}
+          >
+            {isCopied ? "Скопировано ✓" : "Скопировать"}
+          </button>
+          <button onClick={handleDownload} className={buttonClassName}>
+            Скачать
+          </button>
+        </div>
       </div>
-
-      <pre className="max-h-[500px] overflow-auto rounded-lg bg-slate-900 p-4 text-sm text-slate-100">
-        <code>{pipeline.content}</code>
-      </pre>
+      <div className="max-h-[420px] overflow-auto rounded-lg border border-line/70 lg:max-h-none">
+        <SyntaxHighlighter
+          language={getLanguage(pipeline.fileName)}
+          style={vscDarkPlus}
+          showLineNumbers={true}
+          wrapLines={true}
+          customStyle={{
+            margin: 0,
+            padding: "1rem",
+            background: "#070b1a",
+            fontSize: "0.78rem",
+            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+          }}
+          lineNumberStyle={{ color: "#3d4a80", minWidth: "2.2em" }}
+        >
+          {pipeline.content}
+        </SyntaxHighlighter>
+      </div>
     </div>
   );
 }
