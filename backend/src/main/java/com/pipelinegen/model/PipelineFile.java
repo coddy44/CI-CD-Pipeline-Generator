@@ -1,5 +1,7 @@
 package com.pipelinegen.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 /**
  * Сгенерированный файл пайплайна.
  *
@@ -7,5 +9,10 @@ package com.pipelinegen.model;
  * @param fileName куда положить файл в репозитории (например ".gitlab-ci.yml" или "Jenkinsfile")
  * @param content  текст файла
  */
-public record PipelineFile(CiPlatform platform, String fileName, String content) {
+public record PipelineFile(
+        CiPlatform platform,
+        String fileName,
+        String content,
+        @JsonInclude(JsonInclude.Include.NON_NULL) PipelineStructure structure
+) {
 }
