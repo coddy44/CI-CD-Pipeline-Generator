@@ -1,14 +1,12 @@
 package com.pipelinegen.generator;
 
 import com.pipelinegen.exception.UnsupportedStackException;
-import com.pipelinegen.model.BuildTool;
-import com.pipelinegen.model.CiPlatform;
-import com.pipelinegen.model.Language;
-import com.pipelinegen.model.PipelineFile;
-import com.pipelinegen.model.ProjectStack;
+import com.pipelinegen.model.*;
 import org.junit.jupiter.api.Test;
+import org.yaml.snakeyaml.Yaml;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -84,6 +82,17 @@ class TemplatePipelineGeneratorTest {
                 .contains("npm install")
                 .contains("npm run build --if-present")
                 .contains("npm run test --if-present");
+        assertThat(file.structure().stages()).containsExactly("build");
+        assertThat(file.structure().nodes()).extracting(PipelineStructure.Step::id)
+                .containsExactly("install", "build", "test");
+        assertThat(file.structure().nodes()).extracting(PipelineStructure.Step::needs)
+                .containsExactly(List.of(), List.of("install"), List.of("build"));
+
+        Map<String, Object> yaml = new Yaml().load(file.content());
+        Map<?, ?> buildJob = (Map<?, ?>) yaml.get("build");
+        assertThat(buildJob.get("script")).isEqualTo(file.structure().nodes().stream()
+                .map(step -> step.details().command())
+                .toList());
     }
 
     @Test
@@ -92,6 +101,8 @@ class TemplatePipelineGeneratorTest {
                 typescriptNpm(false, false), CiPlatform.GITLAB_CI, "main");
 
         assertThat(file.content()).doesNotContain("npm run test");
+        assertThat(file.structure().nodes()).extracting(PipelineStructure.Step::id)
+                .containsExactly("install", "build");
     }
 
     @Test

@@ -8,14 +8,22 @@ import type {
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/api/v1";
 
 export class BackendError extends Error {
+  status: number
+  code: string
+  details: string[]
+
   constructor(
-    public status: number,
-    public code: string,
+    status: number,
+    code: string,
     message: string,
-    public details: string[] = [],
+    details: string[] = [],
   ) {
-    super(message);
-    this.name = "BackendError";
+    super(message)
+    this.name = 'BackendError'
+    
+    this.status = status
+    this.code = code
+    this.details = details
   }
 }
 

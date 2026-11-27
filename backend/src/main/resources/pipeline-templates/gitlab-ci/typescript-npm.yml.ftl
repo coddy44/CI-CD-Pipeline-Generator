@@ -1,19 +1,15 @@
 stages:
-    - build
+    - [=stageName]
 
 default:
     image: node:[=languageVersion]
 
 build:
-    stage: build
+    stage: [=stageName]
     script:
-        - |
-            if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then
-                npm ci
-            else
-                npm install
-            fi
-        - npm run build --if-present
-<#if hasTests>
-        - npm run test --if-present
-</#if>
+<#list scriptCommands as command>
+        - |-
+<#list command as line>
+            [=line]
+</#list>
+</#list>

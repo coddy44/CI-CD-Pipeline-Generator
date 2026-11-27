@@ -6,16 +6,17 @@ interface RepoFormProps {
   isLoading: boolean;
 }
 
+const fieldClassName =
+  "w-full rounded-lg border border-line bg-abyss/70 px-3 py-2 text-sm text-star placeholder:text-faint transition focus:border-pulsar focus:outline-none focus:ring-2 focus:ring-pulsar/25";
+
 export function RepoForm({ onSubmit, isLoading }: RepoFormProps) {
   const [repoUrl, setRepoUrl] = useState("");
   const [branch, setBranch] = useState("");
   const [ciPlatform, setCiPlatform] = useState("");
-
   const [platforms, setPlatforms] = useState<string[]>([]);
   const [isLoadingPlatforms, setIsLoadingPlatforms] = useState(true);
   const [errorPlatforms, setErrorPlatforms] = useState("");
 
-  // Загрузка платформ при монтировании компонента и выбор первой по умолчанию
   useEffect(() => {
     getSupported()
       .then((data) => {
@@ -39,48 +40,62 @@ export function RepoForm({ onSubmit, isLoading }: RepoFormProps) {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex flex-col gap-5 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
-    >
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">
-          Ссылка на GitHub-репозиторий <span className="text-red-500">*</span>
+        <label
+          htmlFor="repo-url"
+          className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-dim"
+        >
+          Ссылка на GitHub-репозиторий <span className="text-nova">*</span>
         </label>
         <input
+          id="repo-url"
           type="url"
           required
           placeholder="https://github.com/owner/repo"
           value={repoUrl}
           onChange={(e) => setRepoUrl(e.target.value)}
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className={fieldClassName}
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-1">
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
+          <label
+            htmlFor="branch"
+            className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-dim"
+          >
             Ветка (опционально)
           </label>
           <input
+            id="branch"
             type="text"
             placeholder="main"
             value={branch}
             onChange={(e) => setBranch(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className={fieldClassName}
           />
         </div>
-
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            CI-платформа <span className="text-red-500">*</span>
+          <label
+            htmlFor="ci-platform"
+            className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-dim"
+          >
+            CI-платформа <span className="text-nova">*</span>
           </label>
           <select
+            id="ci-platform"
             required
             value={ciPlatform}
             onChange={(e) => setCiPlatform(e.target.value)}
             disabled={isLoadingPlatforms || platforms.length === 0}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-400"
+            className={`${fieldClassName} appearance-none pr-8 disabled:cursor-not-allowed disabled:opacity-50`}
+            style={{
+              backgroundImage:
+                "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2393a0d8' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\")",
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: "right 0.7rem center",
+            }}
           >
             {isLoadingPlatforms && <option value="">Загрузка...</option>}
             {!isLoadingPlatforms && platforms.length === 0 && (
@@ -96,7 +111,7 @@ export function RepoForm({ onSubmit, isLoading }: RepoFormProps) {
       </div>
 
       {errorPlatforms && (
-        <p className="text-sm text-red-600">
+        <p className="text-xs text-redshift">
           Ошибка загрузки платформ: {errorPlatforms}
         </p>
       )}
@@ -104,9 +119,31 @@ export function RepoForm({ onSubmit, isLoading }: RepoFormProps) {
       <button
         type="submit"
         disabled={isLoading || isLoadingPlatforms || platforms.length === 0}
-        className="mt-2 w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:bg-blue-300"
+        className="mt-1 w-full rounded-lg bg-gradient-to-r from-pulsar to-quasar px-4 py-2.5 text-sm font-semibold text-white shadow-[0_0_24px_rgba(91,140,255,0.35)] transition hover:brightness-110 hover:shadow-[0_0_36px_rgba(139,92,246,0.5)] disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
       >
-        {isLoading ? "Генерация..." : "Сгенерировать пайплайн"}
+        {isLoading ? (
+          <span className="flex items-center justify-center gap-2">
+            <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+              <circle
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeOpacity="0.25"
+                strokeWidth="3"
+              />
+              <path
+                d="M22 12a10 10 0 0 0-10-10"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+              />
+            </svg>
+            Генерация...
+          </span>
+        ) : (
+          "Сгенерировать пайплайн"
+        )}
       </button>
     </form>
   );

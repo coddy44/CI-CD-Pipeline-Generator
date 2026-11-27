@@ -13,6 +13,8 @@ import java.util.List;
  * @param hasTests        найдены ли тесты (src/test, *.test.ts, tests/ и т.п.)
  * @param hasDockerfile   есть ли Dockerfile в корне
  * @param defaultBranch   ветка по умолчанию (main/master)
+ * @param hasNpmLockfile  найден package-lock.json или npm-shrinkwrap.json
+ * @param hasNpmTestScript есть непустой scripts.test без стандартной заглушки npm
  */
 public record ProjectStack(
         Language language,
@@ -21,8 +23,15 @@ public record ProjectStack(
         List<String> frameworks,
         boolean hasTests,
         boolean hasDockerfile,
-        String defaultBranch
+        String defaultBranch,
+        boolean hasNpmLockfile,
+        boolean hasNpmTestScript
 ) {
+    public ProjectStack(Language language, String languageVersion, BuildTool buildTool, List<String> frameworks,
+                        boolean hasTests, boolean hasDockerfile, String defaultBranch) {
+        this(language, languageVersion, buildTool, frameworks, hasTests, hasDockerfile, defaultBranch, false, false);
+    }
+
     public ProjectStack {
         frameworks = frameworks == null ? List.of() : List.copyOf(frameworks);
     }
