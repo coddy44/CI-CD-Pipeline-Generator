@@ -105,11 +105,22 @@ public class TemplatePipelineGenerator {
      */
     private static Map<String, Object> buildModel(ProjectStack stack, String branch) {
         Map<String, Object> model = new HashMap<>();
-        model.put("languageVersion", stack.languageVersion());
+        model.put("languageVersion", resolveLanguageVersion(stack));
         model.put("frameworks", stack.frameworks());
         model.put("hasTests", stack.hasTests());
         model.put("hasDockerfile", stack.hasDockerfile());
         model.put("branch", branch);
         return model;
+    }
+
+    public static String resolveLanguageVersion(ProjectStack stack) {
+        if (stack.languageVersion() != null && !stack.languageVersion().isBlank()) {
+            return stack.languageVersion();
+        }
+        return switch (stack.language()) {
+            case JAVA -> "21";
+            case JAVASCRIPT, TYPESCRIPT -> "22";
+            case PYTHON -> "3.12";
+        };
     }
 }

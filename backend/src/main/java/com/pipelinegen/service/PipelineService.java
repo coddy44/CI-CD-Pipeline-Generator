@@ -27,13 +27,19 @@ public class PipelineService {
         ProjectStack stack = analyzer.analyze(request.repoUrl(), request.branch());
 
         String branch = hasText(request.branch()) ? request.branch() : stack.defaultBranch();
-        PipelineFile pipeline = generator.generate(stack, request.ciPlatform(), branch);
-
         List<String> warnings = new ArrayList<>();
+        if (!hasText(stack.languageVersion())) {
+            String version = TemplatePipelineGenerator.resolveLanguageVersion(stack);
+            warnings.add("Версия среды не определена. Используется версия " + version);
+            stack = new ProjectStack(stack.language(), version, stack.buildTool(), stack.frameworks(),
+                    stack.hasTests(), stack.hasDockerfile(), stack.defaultBranch(),
+                    stack.hasNpmLockfile(), stack.hasNpmTestScript());
+        }
         if (!stack.hasTests()) {
             warnings.add("Тесты не найдены — шаг запуска тестов не добавлен в пайплайн");
         }
 
+        PipelineFile pipeline = generator.generate(stack, request.ciPlatform(), branch);
         return new GenerateResponse(request.repoUrl(), stack, pipeline, warnings);
     }
 

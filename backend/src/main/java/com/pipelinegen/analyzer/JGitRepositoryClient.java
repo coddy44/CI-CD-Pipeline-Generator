@@ -42,6 +42,23 @@ public class JGitRepositoryClient {
         RepositoryWorkspace.cleanAbandoned(temporaryDirectory);
     }
 
+    String defaultBranch(String repoUrl) {
+        validateUrl(repoUrl);
+        try {
+            var head = Git.lsRemoteRepository()
+                    .setRemote(repoUrl)
+                    .setTimeout(timeoutSeconds)
+                    .setCredentialsProvider(new UsernamePasswordCredentialsProvider("", ""))
+                    .callAsMap().get(Constants.HEAD);
+            if (head != null && head.isSymbolic() && head.getTarget().getName().startsWith(Constants.R_HEADS)) {
+                return head.getTarget().getName().substring(Constants.R_HEADS.length());
+            }
+        } catch (GitAPIException e) {
+            throw new RepositoryAccessException("Не удалось определить ветку по умолчанию", e);
+        }
+        throw new RepositoryAccessException("Репозиторий не сообщил ветку по умолчанию", null);
+    }
+
     /**
      * @param repoUrl публичный HTTPS-адрес GitHub или GitLab
      * @param branch имя ветки; null или пустая строка — ветка по умолчанию

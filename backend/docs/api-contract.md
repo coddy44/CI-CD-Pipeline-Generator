@@ -102,7 +102,7 @@ OpenAPI-спецификация: `http://localhost:8080/v3/api-docs`
 | 400  | `VALIDATION_ERROR`          | Пустая или некорректная ссылка, не выбрана CI-система |
 | 400  | `MALFORMED_REQUEST`         | Тело не JSON или неизвестное значение `ciPlatform` |
 | 422  | `REPOSITORY_NOT_ACCESSIBLE` | Репозиторий не найден, приватный или не клонируется |
-| 422  | `UNSUPPORTED_STACK`         | Стек определён, но шаблона для него пока нет |
+| 422  | `UNSUPPORTED_STACK`         | Стек или структура не поддерживается, манифест повреждён, превышен лимит анализа или нет шаблона |
 | 500  | `INTERNAL_ERROR`            | Непредвиденная ошибка сервера |
 
 ---
@@ -115,7 +115,7 @@ OpenAPI-спецификация: `http://localhost:8080/v3/api-docs`
 | Поле              | Тип          | Пример |
 |-------------------|--------------|--------|
 | `language`        | enum         | `JAVA`, `TYPESCRIPT`, `JAVASCRIPT`, `PYTHON` |
-| `languageVersion` | строка       | `"21"`, `"20"`, `"3.12"` |
+| `languageVersion` | строка       | Определённая версия или значение по умолчанию: Java `"21"`, Node.js `"22"`, Python `"3.12"`. При подстановке добавляется предупреждение |
 | `buildTool`       | enum         | `MAVEN`, `GRADLE`, `NPM`, `PIP` |
 | `frameworks`      | список строк | `["spring-boot"]`, `["react"]`, `[]` |
 | `hasTests`        | boolean      | `true` |
