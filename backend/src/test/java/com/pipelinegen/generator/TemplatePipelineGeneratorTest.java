@@ -27,6 +27,11 @@ class TemplatePipelineGeneratorTest {
                 List.of("react"), hasTests, hasDockerfile, "main");
     }
 
+    private static ProjectStack pythonPip(boolean hasTests) {
+        return new ProjectStack(Language.PYTHON, "3.12", BuildTool.PIP,
+                List.of(), hasTests, false, "main");
+    }
+
     @Test
     void generatesGitlabCiForJavaMaven() {
         PipelineFile file = generator.generate(javaMaven(true, false), CiPlatform.GITLAB_CI, "main");
@@ -58,15 +63,6 @@ class TemplatePipelineGeneratorTest {
         PipelineFile file = generator.generate(javaMaven(false, false), CiPlatform.GITLAB_CI, "main");
 
         assertThat(file.content()).doesNotContain("mvn -B test");
-    }
-
-    @Test
-    void failsForStackWithoutTemplate() {
-        ProjectStack python = new ProjectStack(Language.PYTHON, "3.12", BuildTool.PIP,
-                List.of(), true, false, "main");
-
-        assertThatThrownBy(() -> generator.generate(python, CiPlatform.GITLAB_CI, "main"))
-                .isInstanceOf(UnsupportedStackException.class);
     }
 
     @Test
@@ -117,5 +113,49 @@ class TemplatePipelineGeneratorTest {
         assertThat(file.fileName()).isEqualTo("Jenkinsfile");
         assertThat(file.content())
                 .doesNotContain("stage('Test')");
+    }
+
+    @Test
+    void generatesGitlabCiForPythonPip() {
+        PipelineFile file = generator.generate(pythonPip(true), CiPlatform.GITLAB_CI, "main");
+
+        assertThat(file.fileName()).isEqualTo(".gitlab-ci.yml");
+        assertThat(file.content())
+                .contains("image: python:3.12")
+                .contains("python -m pip install -r requirements.txt")
+                .contains("python -m pip install .")
+                .contains("python -m pytest");
+    }
+
+    @Test
+    void generatesJenkinsfileForPythonPip() {
+        PipelineFile file = generator.generate(pythonPip(true), CiPlatform.JENKINS, "main");
+
+        assertThat(file.fileName()).isEqualTo("Jenkinsfile");
+        assertThat(file.content())
+                .contains("image 'python:3.12'")
+                .contains("python -m pip install -r requirements.txt")
+                .contains("python -m pip install .")
+                .contains("stage('Test')")
+                .contains("python -m pytest");
+    }
+
+    @Test
+    void skipsPythonTestCommandsWhenNoTests() {
+        ProjectStack stack = pythonPip(false);
+
+        assertThat(generator.generate(stack, CiPlatform.GITLAB_CI, "main").content())
+                .doesNotContain("python -m pytest");
+        assertThat(generator.generate(stack, CiPlatform.JENKINS, "main").content())
+                .doesNotContain("stage('Test')", "python -m pytest");
+    }
+
+    @Test
+    void failsForStackWithoutTemplate() {
+        ProjectStack javascript = new ProjectStack(Language.JAVASCRIPT, "22", BuildTool.NPM,
+                List.of(), true, false, "main");
+
+        assertThatThrownBy(() -> generator.generate(javascript, CiPlatform.GITLAB_CI, "main"))
+                .isInstanceOf(UnsupportedStackException.class);
     }
 }
