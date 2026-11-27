@@ -89,4 +89,33 @@ class TemplatePipelineGeneratorTest {
                 .contains("npm run build --if-present")
                 .contains("npm run test --if-present");
     }
+
+    @Test
+    void skipsGitlabTestCommandForTypescriptNpmWithoutTests() {
+        PipelineFile file = generator.generate(
+                typescriptNpm(false, false), CiPlatform.GITLAB_CI, "main");
+
+        assertThat(file.content()).doesNotContain("npm run test");
+    }
+
+    @Test
+    void generatesJenkinsfileForTypescriptNpm() {
+        PipelineFile file = generator.generate(typescriptNpm(true, false), CiPlatform.JENKINS, "main");
+
+        assertThat(file.fileName()).isEqualTo("Jenkinsfile");
+        assertThat(file.content())
+                .contains("image 'node:22'")
+                .contains("npm install")
+                .contains("npm run build --if-present")
+                .contains("npm run test --if-present");
+    }
+
+    @Test
+    void skipsJenkinsTestStageForTypescriptNpmWithoutTests() {
+        PipelineFile file = generator.generate(typescriptNpm(false, false), CiPlatform.JENKINS, "main");
+
+        assertThat(file.fileName()).isEqualTo("Jenkinsfile");
+        assertThat(file.content())
+                .doesNotContain("stage('Test')");
+    }
 }
