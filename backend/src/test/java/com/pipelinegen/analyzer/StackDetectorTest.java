@@ -168,6 +168,11 @@ class StackDetectorTest {
     void comparesExactPythonVersionsNumerically() throws IOException {
         write("pyproject.toml", "[project]\nrequires-python = '==3.13'");
         write("app.py", "");
+        assertThat(detector.detect(root).languageVersion()).isEqualTo("3.13.0");
+
+        write(".python-version", "3.13");
+        assertThat(detector.detect(root).languageVersion()).isEqualTo("3.13.0");
+
         write(".python-version", "3.13.0");
         assertThat(detector.detect(root).languageVersion()).isEqualTo("3.13.0");
 
@@ -176,10 +181,62 @@ class StackDetectorTest {
     }
 
     @Test
-    void rejectsUnsupportedPythonConstraint() throws IOException {
+    void normalizesLeadingZerosInExactPythonVersion() throws IOException {
+        write("pyproject.toml", "[project]\nrequires-python = '==3.013'");
+        write(".python-version", "3.13.0");
+        write("app.py", "");
+        assertThat(detector.detect(root).languageVersion()).isEqualTo("3.13.0");
+    }
+
+    @Test
+    void acceptsMajorVersionAsUpperBound() throws IOException {
+        write("pyproject.toml", "[project]\nrequires-python = '>=3.12,<4'");
+        write("app.py", "");
+        assertThat(detector.detect(root).languageVersion()).isEqualTo("3.12");
+
+        write("pyproject.toml", "[project]\nrequires-python = '>=3.012,<4'");
+        assertThat(detector.detect(root).languageVersion()).isEqualTo("3.12");
+        write("pyproject.toml", "[project]\nrequires-python = '>=3.12,<4'");
+
+        write(".python-version", "3.13.2");
+        assertThat(detector.detect(root).languageVersion()).isEqualTo("3.13.2");
+
+        write(".python-version", "4.0.0");
+        rejects(">=3.12,<4");
+    }
+
+    @Test
+    void compatiblePythonReleaseWithMinorLowerBoundAllowsNewerMinor() throws IOException {
         write("pyproject.toml", "[project]\nrequires-python = '~=3.13'");
         write("app.py", "");
+        assertThat(detector.detect(root).languageVersion()).isEqualTo("3.13");
+
+        write(".python-version", "3.14");
+        assertThat(detector.detect(root).languageVersion()).isEqualTo("3.14");
+
+        write(".python-version", "4.0.0");
         rejects("~=3.13");
+    }
+
+    @Test
+    void compatiblePythonReleaseWithPatchLowerBoundStaysInSameMinor() throws IOException {
+        write("pyproject.toml", "[project]\nrequires-python = '~=3.13.2'");
+        write("app.py", "");
+        assertThat(detector.detect(root).languageVersion()).isEqualTo("3.13.2");
+
+        write(".python-version", "3.13.3");
+        assertThat(detector.detect(root).languageVersion()).isEqualTo("3.13.3");
+        write(".python-version", "3.13.1");
+        rejects("~=3.13.2");
+        write(".python-version", "3.14.0");
+        rejects("~=3.13.2");
+    }
+
+    @Test
+    void rejectsUnsupportedPythonConstraint() throws IOException {
+        write("pyproject.toml", "[project]\nrequires-python = '!=3.13.*'");
+        write("app.py", "");
+        rejects("!=3.13.*");
     }
 
     @ParameterizedTest

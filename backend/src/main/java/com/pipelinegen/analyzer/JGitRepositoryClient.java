@@ -45,13 +45,23 @@ public class JGitRepositoryClient {
     String defaultBranch(String repoUrl) {
         validateUrl(repoUrl);
         try {
-            var head = Git.lsRemoteRepository()
+            var refs = Git.lsRemoteRepository()
                     .setRemote(repoUrl)
                     .setTimeout(timeoutSeconds)
                     .setCredentialsProvider(new UsernamePasswordCredentialsProvider("", ""))
-                    .callAsMap().get(Constants.HEAD);
+                    .callAsMap();
+            var head = refs.get(Constants.HEAD);
             if (head != null && head.isSymbolic() && head.getTarget().getName().startsWith(Constants.R_HEADS)) {
                 return head.getTarget().getName().substring(Constants.R_HEADS.length());
+            }
+            if (head != null && !head.isSymbolic() && head.getObjectId() != null) {
+                var matches = refs.values().stream()
+                        .filter(ref -> ref.getName().startsWith(Constants.R_HEADS))
+                        .filter(ref -> head.getObjectId().equals(ref.getObjectId()))
+                        .limit(2).toList();
+                if (matches.size() == 1) {
+                    return matches.getFirst().getName().substring(Constants.R_HEADS.length());
+                }
             }
         } catch (GitAPIException e) {
             throw new RepositoryAccessException("Не удалось определить ветку по умолчанию", e);
@@ -69,6 +79,9 @@ public class JGitRepositoryClient {
     public ClonedRepository cloneRepository(String repoUrl, String branch) throws IOException {
         validateUrl(repoUrl);
         String requestedBranch = validateBranch(branch);
+        if (requestedBranch == null) {
+            requestedBranch = defaultBranch(repoUrl);
+        }
 
         RepositoryWorkspace workspace = RepositoryWorkspace.create(temporaryDirectory);
         try {
@@ -86,20 +99,18 @@ public class JGitRepositoryClient {
 
     private ClonedRepository cloneInto(RepositoryWorkspace workspace, String repoUrl, String requestedBranch)
             throws IOException, GitAPIException {
+        String ref = Constants.R_HEADS + requestedBranch;
         CloneCommand command = Git.cloneRepository()
                 .setURI(repoUrl)
                 .setDirectory(workspace.directory().toFile())
                 .setCloneAllBranches(false)
+                .setBranch(ref)
+                .setBranchesToClone(List.of(ref))
                 .setCloneSubmodules(false)
                 .setNoTags()
                 .setDepth(1)
                 .setTimeout(timeoutSeconds)
                 .setCredentialsProvider(new UsernamePasswordCredentialsProvider("", ""));
-
-        if (requestedBranch != null) {
-            String ref = Constants.R_HEADS + requestedBranch;
-            command.setBranch(ref).setBranchesToClone(List.of(ref));
-        }
 
         try (Git git = command.call()) {
             if (git.getRepository().resolve(Constants.HEAD) == null) {
