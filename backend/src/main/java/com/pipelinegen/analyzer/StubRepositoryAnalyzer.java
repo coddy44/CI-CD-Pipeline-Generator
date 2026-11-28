@@ -4,6 +4,7 @@ import com.pipelinegen.model.BuildTool;
 import com.pipelinegen.model.Language;
 import com.pipelinegen.model.ProjectStack;
 import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Profile;
 
 import java.util.List;
 
@@ -14,6 +15,7 @@ import java.util.List;
  * Удалить, когда появится реализация на JGit.
  */
 @Component
+@Profile("stub")
 public class StubRepositoryAnalyzer implements RepositoryAnalyzer {
 
     @Override
